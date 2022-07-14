@@ -47,11 +47,11 @@
       </div>
       <div class="blog-content">
         <div class="button-group">
-          <a class="btn-edit">Edit Post</button>
-            <a class="btn-post">Delete Blog</a>
+          <a href="/edit-blog/{{@index}}" class="btn-edit">Edit Post</button>
+            <a href="/delete-blog/{{@index}}" class="btn-post">Delete Blog</a>
         </div>
         <h1>
-          <a href="/blog/1" target="_blank">
+          <a href="/blog/{{@index}}" target="_blank">
             {{this.title}}
           </a>
         </h1>

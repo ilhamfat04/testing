@@ -49,8 +49,6 @@ app.get('/', function (req, res) {
 
 app.get('/blog', function (req, res) {
     let dataBlogs = blogs.map(function (data) {
-        console.log(data);
-
         // proses manipulasi
         return {
             ...data,
@@ -58,10 +56,6 @@ app.get('/blog', function (req, res) {
         }
     })
 
-    // for(let i=0;i<10;i++){
-    //     blogs[i].author
-    // }
-    // console.log(dataBlogs);
     res.render('blog', {
         isLogin,
         blog: dataBlogs
@@ -86,9 +80,10 @@ app.post('/blog', function (req, res) {
 
 app.get('/blog/:id', function (req, res) {
     let id = req.params.id
-    let data = ['ilham', 'jody', 'dandi', 'egi']
-    console.log(`Id params : ${id}`);
-    res.render('blog-detail', { author: data[id] })
+
+    // console.log(`Id params : ${id}`);
+    // cara untuk get single data from AOO, menggunakan ID
+    res.render('blog-detail', { data: blogs[id] })
 })
 
 app.get('/contact', function (req, res) {
@@ -102,6 +97,27 @@ app.get('/add-blog', function (req, res) {
     }
 
     res.render('form-blog')
+})
+
+app.get('/delete-blog/:id', function (req, res) {
+    let id = req.params.id
+
+    blogs.splice(id, 1);
+
+    res.redirect("/blog")
+})
+
+app.get('/edit-blog/:id', function (req, res) {
+    let id = req.params.id
+    res.render('update-blog', { data: blogs[id] })
+})
+
+app.post('/edit-blog', function (req, res) {
+    //dapetin id
+    blogs.map(function (data) {
+        //kondisi yang di manipulasi adalah yang id nya sama dengan yang didapatkan
+
+    })
 })
 
 function getFullTime(time) {
