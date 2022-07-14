@@ -14,7 +14,31 @@ app.use('/public', express.static('public'))
 app.use(express.urlencoded({ extended: false }))
 
 // request = client -> server
-// response = server -> client
+// response = server -> client 
+
+let month = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember"
+]
+
+const blogs = [
+    {
+        title: "Pasar Coding di Indonesia Dinilai Masih Menjanjikan",
+        content: "Ketimpangan sumber daya manusia (SDM) di sektor digital masih menjadi isu yang belum terpecahkan. Berdasarkan penelitian ManpowerGroup, ketimpangan SDM global, termasuk Indonesia, meningkat dua kali lipat dalam satu dekade terakhir. Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quam, molestiae numquam! Deleniti maiores expedita eaque deserunt quaerat! Dicta, eligendi debitis?",
+        author: "Ichsan Emrald Alamsyah",
+        posted_at: "12 Jul 2021 22:30 WIB"
+    }
+]
 
 const isLogin = true
 // endpoint
@@ -24,17 +48,39 @@ app.get('/', function (req, res) {
 })
 
 app.get('/blog', function (req, res) {
-    res.render('blog', { isLogin })
+    let dataBlogs = blogs.map(function (data) {
+        console.log(data);
+
+        // proses manipulasi
+        return {
+            ...data,
+            isLogin: isLogin
+        }
+    })
+
+    console.log(dataBlogs);
+
+    // for(let i=0; i<10; i++){
+    //     blogs[i]
+    // }
+
+
+    // console.log(dataBlogs);
+    res.render('blog', { isLogin, blogs })
 })
 
 app.post('/blog', function (req, res) {
-    // let title = req.body.title
-    // let content = req.body.content
+    let { title, content } = req.body
+    let date = new Date()
 
-    let { title, content: dataContent } = req.body
+    let blog = {
+        title,
+        content,
+        author: "Ilham Fathullah",
+        posted_at: getFullTime(date)
+    }
 
-    console.log(req.body);
-    console.log(title, dataContent);
+    blogs.push(blog)
 
     res.redirect('/blog')
 })
@@ -58,6 +104,17 @@ app.get('/add-blog', function (req, res) {
 
     res.render('form-blog')
 })
+
+function getFullTime(time) {
+    let date = time.getDate()
+    let monthIndex = time.getMonth()
+    let year = time.getFullYear()
+
+    let hour = time.getHours()
+    let minute = time.getMinutes()
+
+    return `${date} ${month[monthIndex]} ${year} ${hour}:${minute} WIB`
+}
 
 // set port 
 const port = 5000
