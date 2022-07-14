@@ -58,15 +58,14 @@ app.get('/blog', function (req, res) {
         }
     })
 
-    console.log(dataBlogs);
-
-    // for(let i=0; i<10; i++){
-    //     blogs[i]
+    // for(let i=0;i<10;i++){
+    //     blogs[i].author
     // }
-
-
     // console.log(dataBlogs);
-    res.render('blog', { isLogin, blogs })
+    res.render('blog', {
+        isLogin,
+        blog: dataBlogs
+    })
 })
 
 app.post('/blog', function (req, res) {
@@ -114,6 +113,37 @@ function getFullTime(time) {
     let minute = time.getMinutes()
 
     return `${date} ${month[monthIndex]} ${year} ${hour}:${minute} WIB`
+}
+
+function getDistanceTime(time) {
+    // waktu posting = 08.30 => time
+    // waktu aktual = 08.35 => new Date()
+    // sudah berapa lama?
+    // waktu aktual - waktu posting
+
+    let distance = new Date() - new Date(time)
+
+    let miliseconds = 1000
+    let secondInMinutes = 60
+    let minuteInHour = 60
+    let secondInHour = secondInMinutes * minuteInHour // 3600
+    let hourInDay = 23
+
+    let dayDistance = distance / (miliseconds * secondInHour * hourInDay)
+
+    if (dayDistance >= 1) {
+        const dayDate = Math.floor(dayDistance) + ' day ago'
+        return dayDate
+    } else {
+        let hourDistance = Math.floor(distance / (miliseconds * secondInHour))
+        if (hourDistance > 0) {
+            return hourDistance + ' hour ago'
+        } else {
+            let minuteDistance = Math.floor(distance / (miliseconds * secondInMinutes))
+            return minuteDistance + ' minute ago'
+        }
+    }
+
 }
 
 // set port 
