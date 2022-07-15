@@ -1,6 +1,9 @@
 // pemanggilan package express
 const express = require('express')
 
+//pemanggilan koneksi db
+const db = require('./connection/db')
+
 // menggunakan package express
 const app = express()
 
@@ -31,15 +34,6 @@ let month = [
     "Desember"
 ]
 
-const blogs = [
-    {
-        title: "Pasar Coding di Indonesia Dinilai Masih Menjanjikan",
-        content: "Ketimpangan sumber daya manusia (SDM) di sektor digital masih menjadi isu yang belum terpecahkan. Berdasarkan penelitian ManpowerGroup, ketimpangan SDM global, termasuk Indonesia, meningkat dua kali lipat dalam satu dekade terakhir. Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quam, molestiae numquam! Deleniti maiores expedita eaque deserunt quaerat! Dicta, eligendi debitis?",
-        author: "Ichsan Emrald Alamsyah",
-        posted_at: "12 Jul 2021 22:30 WIB"
-    }
-]
-
 const isLogin = true
 // endpoint
 app.get('/', function (req, res) {
@@ -48,18 +42,36 @@ app.get('/', function (req, res) {
 })
 
 app.get('/blog', function (req, res) {
-    let dataBlogs = blogs.map(function (data) {
-        // proses manipulasi
-        return {
-            ...data,
-            isLogin: isLogin
-        }
+
+    let selectQuery = 'SELECT *	FROM blogs'
+
+    db.connect((err, client, done) => {
+        if (err) throw err
+
+        // if (err) {
+        //     return res.redirect('/')
+        // }
+
+        client.query(selectQuery, (err, result) => {
+            if (err) throw err
+
+            let dataBlogs = result.rows
+
+            dataBlogs = dataBlogs.map((blog) => {
+                return {
+                    ...blog,
+                    postedAt: getFullTime(blog.postedAt),
+                    author: 'Ilham Fathullah'
+                }
+            })
+
+            res.render('blog', {
+                isLogin,
+                blog: dataBlogs
+            })
+        })
     })
 
-    res.render('blog', {
-        isLogin,
-        blog: dataBlogs
-    })
 })
 
 app.post('/blog', function (req, res) {
