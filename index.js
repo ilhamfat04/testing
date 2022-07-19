@@ -43,16 +43,13 @@ app.get('/', function (req, res) {
 
 app.get('/blog', function (req, res) {
 
-    let selectQuery = 'SELECT *	FROM blogs'
+    let selectQuery = 'SELECT * FROM blogs ORDER BY id DESC'
 
     db.connect((err, client, done) => {
         if (err) throw err
 
-        // if (err) {
-        //     return res.redirect('/')
-        // }
-
         client.query(selectQuery, (err, result) => {
+            done()
             if (err) throw err
 
             let dataBlogs = result.rows
@@ -76,26 +73,45 @@ app.get('/blog', function (req, res) {
 
 app.post('/blog', function (req, res) {
     let { title, content } = req.body
-    let date = new Date()
 
     let blog = {
         title,
         content,
-        author: "Ilham Fathullah",
-        posted_at: getFullTime(date)
+        author: 1,
+        image: 'image.png'
     }
 
-    blogs.push(blog)
+    db.connect((err, client, done) => {
+        if (err) throw err
 
-    res.redirect('/blog')
+        let queryPost = `INSERT INTO blogs(title,content, "authorId", image) VALUES
+                            ('${blog.title}','${blog.content}', '${blog.author}', '${blog.image}')`
+
+        client.query(queryPost, (err, result) => {
+            done()
+            if (err) throw err
+            res.redirect('/blog')
+        })
+
+    })
 })
+
 
 app.get('/blog/:id', function (req, res) {
     let id = req.params.id
 
-    // console.log(`Id params : ${id}`);
-    // cara untuk get single data from AOO, menggunakan ID
-    res.render('blog-detail', { data: blogs[id] })
+    let queryDetail = `SELECT * FROM blogs WHERE id=${id}`
+
+    db.connect((err, client, done) => {
+        if (err) throw err
+
+        client.query(queryDetail, (err, result) => {
+            done()
+            if (err) throw err
+
+            res.render('blog-detail', { data: result.rows[0] })
+        })
+    })
 })
 
 app.get('/contact', function (req, res) {
@@ -114,21 +130,52 @@ app.get('/add-blog', function (req, res) {
 app.get('/delete-blog/:id', function (req, res) {
     let id = req.params.id
 
-    blogs.splice(id, 1);
+    db.connect((err, client, done) => {
+        if (err) throw err
 
-    res.redirect("/blog")
+        let queryDelete = `DELETE FROM blogs WHERE id=${id}`
+
+        client.query(queryDelete, (err, result) => {
+            done()
+            if (err) throw err
+
+            res.redirect('/blog')
+        })
+    })
 })
 
 app.get('/edit-blog/:id', function (req, res) {
     let id = req.params.id
-    res.render('update-blog', { data: blogs[id] })
+
+    db.connect((err, client, done) => {
+        if (err) throw err
+
+        let queryDelete = `SELECT * FROM blogs WHERE id=${id}`
+
+        client.query(queryDelete, (err, result) => {
+            done()
+            if (err) throw err
+
+            res.render('update-blog', { data: result.rows[0] })
+        })
+    })
 })
 
 app.post('/edit-blog', function (req, res) {
     //dapetin id
-    blogs.map(function (data) {
-        //kondisi yang di manipulasi adalah yang id nya sama dengan yang didapatkan
+    let { title, content, id } = req.body
 
+    db.connect((err, client, done) => {
+        if (err) throw err
+
+        let queryUpdate = `UPDATE blogs SET title='${title}',content='${content}' WHERE id=${id}`
+
+        client.query(queryUpdate, (err, result) => {
+            // done()
+            if (err) throw err
+
+            res.redirect('/blog')
+        })
     })
 })
 
