@@ -1,5 +1,7 @@
 // pemanggilan package express
 const express = require('express')
+const bcrypt = require('bcrypt')
+const flash = require('express-flash')
 
 //pemanggilan koneksi db
 const db = require('./connection/db')
@@ -12,6 +14,8 @@ app.set('view engine', 'hbs');
 
 // static folder
 app.use('/public', express.static('public'))
+
+app.use(flash())
 
 //body parser
 app.use(express.urlencoded({ extended: false }))
@@ -178,6 +182,71 @@ app.post('/edit-blog', function (req, res) {
         })
     })
 })
+
+app.get('/register', function (req, res) {
+    res.render('register')
+})
+
+app.post('/register', function (req, res) {
+    let { name, email, password } = req.body
+
+    password = bcrypt.hashSync(password, 10);
+
+    let queryCheckEmail = `SELECT * FROM "users" WHERE email='${email}'`
+
+    let query = `INSERT INTO users(name, email, password) VALUES
+                    ('${name}', '${email}', '${password}')`
+
+    db.connect((err, client, done) => {
+        if (err) throw err
+
+        client.query(queryCheckEmail, (err, result) => {
+            if (err) throw err
+
+            if (result.rowCount != 0) {
+                return res.redirect('/register')
+            }
+
+            client.query(query, (err, result) => {
+                done()
+                if (err) throw err
+
+                res.redirect('/login')
+            })
+        })
+    })
+})
+
+app.get('/login', function (req, res) {
+    res.render('login')
+})
+
+app.post('/login', function (req, res) {
+    let { email, password } = req.body
+
+    db.connect((err, client, done) => {
+        if (err) throw err
+
+        let queryCheckEmail = `SELECT * FROM "users" WHERE email='${email}'`
+
+        client.query(queryCheckEmail, (err, result) => {
+            if (err) throw err
+
+            if (result.rowCount == 0) {
+                return res.redirect('/login')
+            }
+
+            let isMatch = bcrypt.compareSync(password, result.rows[0].password)
+
+            if (isMatch) {
+                res.redirect('/blog')
+            } else {
+                res.redirect('/login')
+            }
+        })
+    })
+})
+
 
 function getFullTime(time) {
     let date = time.getDate()
