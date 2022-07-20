@@ -2,6 +2,7 @@
 const express = require('express')
 const bcrypt = require('bcrypt')
 const flash = require('express-flash')
+const session = require('express-session')
 
 //pemanggilan koneksi db
 const db = require('./connection/db')
@@ -16,6 +17,22 @@ app.set('view engine', 'hbs');
 app.use('/public', express.static('public'))
 
 app.use(flash())
+
+app.use(
+    session({
+        cookie: {
+            httpOnly: true,
+            secure: false,
+            maxAge: 1000 * 60 * 60 * 2
+        },
+        store: new session.MemoryStore(),
+        saveUninitialized: true,
+        resave: false,
+        secret: 'secretValue'
+    })
+)
+
+
 
 //body parser
 app.use(express.urlencoded({ extended: false }))
@@ -38,11 +55,15 @@ let month = [
     "Desember"
 ]
 
-const isLogin = true
+// const isLogin = true
 // endpoint
 app.get('/', function (req, res) {
     let title = "Project Blog"
-    res.render('index', { title })
+    res.render('index', {
+        title,
+        isLogin: req.session.isLogin,
+        user: req.session.user
+    })
 })
 
 app.get('/blog', function (req, res) {
@@ -66,8 +87,10 @@ app.get('/blog', function (req, res) {
                 }
             })
 
+            console.log(req.session.user);
             res.render('blog', {
-                isLogin,
+                isLogin: req.session.isLogin,
+                user: req.session.user,
                 blog: dataBlogs
             })
         })
@@ -233,18 +256,33 @@ app.post('/login', function (req, res) {
             if (err) throw err
 
             if (result.rowCount == 0) {
+                req.flash('danger', 'email not found')
+
                 return res.redirect('/login')
             }
 
             let isMatch = bcrypt.compareSync(password, result.rows[0].password)
 
             if (isMatch) {
+                req.session.isLogin = true
+                req.session.user = {
+                    name: result.rows[0].name,
+                }
+                req.flash('success', 'login success')
                 res.redirect('/blog')
             } else {
+                req.flash('danger', 'email and password doesnt match')
+
                 res.redirect('/login')
             }
+
         })
     })
+})
+
+app.get('/logout', function (req, res) {
+    req.session.destroy()
+    res.redirect('/')
 })
 
 
