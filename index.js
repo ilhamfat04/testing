@@ -68,8 +68,21 @@ app.get('/', function (req, res) {
 
 app.get('/blog', function (req, res) {
 
-    let selectQuery = 'SELECT * FROM blogs ORDER BY id DESC'
-
+    let selectQuery = ''
+    if (req.session.isLogin) {
+        selectQuery = `SELECT blogs.*, name
+                        FROM blogs
+                        INNER JOIN users
+                        ON blogs."authorId" = users.id
+                        WHERE blogs."authorId" = ${req.session.user.id}
+                        ORDER BY id DESC`
+    } else {
+        selectQuery = `SELECT blogs.*, name
+                        FROM blogs
+                        INNER JOIN users
+                        ON blogs."authorId" = users.id
+                        ORDER BY id DESC`
+    }
     db.connect((err, client, done) => {
         if (err) throw err
 
@@ -78,16 +91,17 @@ app.get('/blog', function (req, res) {
             if (err) throw err
 
             let dataBlogs = result.rows
+            console.log(dataBlogs);
 
             dataBlogs = dataBlogs.map((blog) => {
                 return {
                     ...blog,
                     postedAt: getFullTime(blog.postedAt),
-                    author: 'Ilham Fathullah'
+                    isLogin: req.session.isLogin
                 }
             })
 
-            console.log(req.session.user);
+            console.log(req.session.isLogin);
             res.render('blog', {
                 isLogin: req.session.isLogin,
                 user: req.session.user,
@@ -104,7 +118,7 @@ app.post('/blog', function (req, res) {
     let blog = {
         title,
         content,
-        author: 1,
+        author: req.session.user.id,
         image: 'image.png'
     }
 
@@ -147,14 +161,22 @@ app.get('/contact', function (req, res) {
 
 app.get('/add-blog', function (req, res) {
 
+    let isLogin = req.session.isLogin
     if (!isLogin) {
         return res.redirect('/')
     }
 
-    res.render('form-blog')
+    res.render('form-blog', {
+        isLogin
+    })
 })
 
 app.get('/delete-blog/:id', function (req, res) {
+    let isLogin = req.session.isLogin
+    if (!isLogin) {
+        return res.redirect('/')
+    }
+
     let id = req.params.id
 
     db.connect((err, client, done) => {
@@ -172,6 +194,10 @@ app.get('/delete-blog/:id', function (req, res) {
 })
 
 app.get('/edit-blog/:id', function (req, res) {
+    let isLogin = req.session.isLogin
+    if (!isLogin) {
+        return res.redirect('/')
+    }
     let id = req.params.id
 
     db.connect((err, client, done) => {
@@ -266,6 +292,7 @@ app.post('/login', function (req, res) {
             if (isMatch) {
                 req.session.isLogin = true
                 req.session.user = {
+                    id: result.rows[0].id,
                     name: result.rows[0].name,
                 }
                 req.flash('success', 'login success')

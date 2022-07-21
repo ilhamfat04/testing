@@ -59,7 +59,7 @@
     <!-- conditional post blog -->
     {{#if isLogin}}
     <div class="button-group w-100">
-      <a href="/add-blog" class="btn-post">Add New Blog</a>
+      <a href="/add-blog" class="btn-post">Add New Blog|{{isLogin}}</a>
     </div>
     {{/if}}
     <!-- dynamic content would be here -->
@@ -69,17 +69,19 @@
         <img src="/public/assets/blog-img.png" alt="Pasar Coding di Indonesia Dinilai Masih Menjanjikan" />
       </div>
       <div class="blog-content">
+        {{#if isLogin}}
         <div class="button-group">
           <a href="/edit-blog/{{this.id}}" class="btn-edit">Edit Post</button>
             <a href="/delete-blog/{{this.id}}" class="btn-post">Delete Blog</a>
         </div>
+        {{/if}}
         <h1>
           <a href="/blog/{{this.id}}" target="_blank">
             {{this.title}}
           </a>
         </h1>
         <div class="detail-blog-content">
-          {{this.postedAt}} | {{this.author}}
+          {{this.postedAt}} | {{this.name}}
         </div>
         <p>
           {{this.content}}
