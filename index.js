@@ -364,3 +364,34 @@ app.listen(port, function () {
 })
 
 
+app.get('/test/:id', (req, res) => {
+    // let dataDate = '2022-03-01'
+    let { id } = req.params
+    db.connect((err, client, done) => {
+        if (err) throw err
+
+        client.query(`SELECT * FROM test WHERE id=${id}`, (err, result) => {
+            if (err) throw err
+
+            let finalDate = result.rows[0]
+
+            finalDate.publish = finalDate.publish.toLocaleString().split(',')[0]
+            return console.log(finalDate);
+            res.render('test', { data: finalDate })
+        })
+    })
+})
+
+app.post('/test', (req, res) => {
+    let { date } = req.body
+
+    db.connect((err, client, done) => {
+        if (err) throw err
+
+        client.query(`INSERT INTO test(publish) VALUES ('${date}')`, (err, result) => {
+            if (err) throw err
+
+            res.redirect('/test')
+        })
+    })
+})
