@@ -59,14 +59,14 @@
     <!-- conditional post blog -->
     {{#if isLogin}}
     <div class="button-group w-100">
-      <a href="/add-blog" class="btn-post">Add New Blog|{{isLogin}}</a>
+      <a href="/add-blog" class="btn-post">Add New Blog</a>
     </div>
     {{/if}}
     <!-- dynamic content would be here -->
     {{#each blog}}
     <div class="blog-list-item">
       <div class="blog-image">
-        <img src="/public/assets/blog-img.png" alt="Pasar Coding di Indonesia Dinilai Masih Menjanjikan" />
+        <img src="/uploads/{{this.image}}" alt="Pasar Coding di Indonesia Dinilai Masih Menjanjikan" />
       </div>
       <div class="blog-content">
         {{#if isLogin}}

@@ -6,6 +6,7 @@ const session = require('express-session')
 
 //pemanggilan koneksi db
 const db = require('./connection/db')
+const upload = require('./middlewares/uploadFile')
 
 // menggunakan package express
 const app = express()
@@ -15,6 +16,7 @@ app.set('view engine', 'hbs');
 
 // static folder
 app.use('/public', express.static('public'))
+app.use('/uploads', express.static('uploads'))
 
 app.use(flash())
 
@@ -112,14 +114,14 @@ app.get('/blog', function (req, res) {
 
 })
 
-app.post('/blog', function (req, res) {
+app.post('/blog', upload.single('image'), function (req, res) {
     let { title, content } = req.body
 
     let blog = {
         title,
         content,
         author: req.session.user.id,
-        image: 'image.png'
+        image: req.file.filename
     }
 
     db.connect((err, client, done) => {
